@@ -1,0 +1,26 @@
+services:
+  xray-checker-download:
+    mem_limit: 256m  # zanity 2026-11-08: защита сервера от OOM
+    logging:
+      driver: json-file
+      options: {max-size: "50m", max-file: "3"}
+    image: kutovoys/xray-checker
+    container_name: xray-checker-download
+    restart: unless-stopped
+    environment:
+      - SUBSCRIPTION_URL=__REDACTED__
+      - PROXY_CHECK_METHOD=download
+      - PROXY_DOWNLOAD_URL=https://archive.torproject.org/tor-package-archive/torbrowser/13.0/tor-browser-linux-x86_64-13.0.tar.xz
+      - PROXY_DOWNLOAD_TIMEOUT=4
+      - PROXY_DOWNLOAD_MIN_SIZE=1048576
+      - PROXY_CHECK_INTERVAL=900
+      - PROXY_CHECK_CONCURRENCY=1
+      - SUBSCRIPTION_UPDATE=true
+      - SUBSCRIPTION_UPDATE_INTERVAL=600
+      - METRICS_PROTECTED=true
+      - METRICS_USERNAME=alerter
+      - METRICS_PASSWORD=__REDACTED__
+      - METRICS_INSTANCE=download
+      - WEB_PUBLIC=false
+    ports:
+      - "127.0.0.1:2113:2112"

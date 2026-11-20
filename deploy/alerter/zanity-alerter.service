@@ -1,0 +1,15 @@
+[Unit]
+Description=Zanity alerter (xray-checker + HAProxy -> Telegram)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/zanity-alerter/alerter.py
+Restart=always
+RestartSec=15
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

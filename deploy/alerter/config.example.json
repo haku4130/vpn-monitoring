@@ -1,0 +1,235 @@
+{
+ "interval_seconds": 120,
+ "failures_before_alert": 3,
+ "mass_outage_ratio": 0.5,
+ "heartbeat_hour_utc": 7,
+ "bot_env": "/root/remnawave-bot/.env",
+ "chat_key": "ADMIN_NOTIFICATIONS_CHAT_ID",
+ "sources": {
+  "ip": {
+   "name": "xray-checker (ip)",
+   "container": "remnawave-bot-xray-checker-1",
+   "port": 2112,
+   "username": "admin",
+   "password": "__REDACTED__",
+   "interval_seconds": 300,
+   "failures_before_alert": 3,
+   "log_container": "remnawave-bot-xray-checker-1"
+  },
+  "exit": {
+   "name": "xray-checker (выход)",
+   "host": "127.0.0.1",
+   "port": 2113,
+   "username": "alerter",
+   "password": "__REDACTED__",
+   "interval_seconds": 900,
+   "failures_before_alert": 2,
+   "log_container": "xray-checker-download",
+   "timeout_seconds": 4,
+   "min_bytes": 1048576
+  }
+ },
+ "_comment_skip": "российские локации ходят напрямую, заблокированный в РФ зонд им недоступен — выход у них не проверяем, вместо этого yt_speed проверяет YouTube",
+ "exit_check_skip_addresses": [
+  "node-c.example.net:3443",
+  "node-d.example.net:3443",
+  "node-e.example.net:3444",
+  "node-c.example.net:3446",
+  "203.0.113.10:3444"
+ ],
+ "haproxy_socket": "/run/haproxy/admin.sock",
+ "haproxy_pools": [
+  "be_socks",
+  "be_smtp"
+ ],
+ "quota_key": "/etc/zanity-alerter/quota_key",
+ "quota_poll_seconds": 600,
+ "quota_nodes": [
+  {
+   "name": "exit-1",
+   "host": "exit-1.example.net",
+   "port": 22,
+   "count_mode": "rxtx",
+   "cycle_day": 1,
+   "warn_percent": [
+    80,
+    95,
+    100
+   ]
+  },
+  {
+   "name": "exit-4",
+   "host": "exit-4.example.net",
+   "port": 22,
+   "count_mode": "rxtx",
+   "cycle_day": 1,
+   "warn_percent": [
+    80,
+    95,
+    100
+   ]
+  },
+  {
+   "name": "exit-2",
+   "host": "exit-2.example.net",
+   "port": 22,
+   "count_mode": "rxtx",
+   "cycle_day": 1,
+   "warn_percent": [
+    80,
+    95,
+    100
+   ]
+  },
+  {
+   "name": "exit-3",
+   "host": "198.51.100.40",
+   "port": 22,
+   "count_mode": "rxtx",
+   "cycle_day": 1,
+   "warn_percent": [
+    80,
+    95,
+    100
+   ]
+  },
+  {
+   "name": "node-a",
+   "host": "203.0.113.11",
+   "port": 22,
+   "count_mode": "rxtx",
+   "cycle_day": 1,
+   "warn_percent": [
+    80,
+    95,
+    100
+   ]
+  },
+  {
+   "name": "exit-5",
+   "host": "203.0.113.11",
+   "port": 2224,
+   "count_mode": "rxtx",
+   "cycle_day": 29,
+   "warn_percent": [
+    80,
+    95,
+    100
+   ]
+  },
+  {
+   "name": "exit-6",
+   "host": "exit-6.example.net",
+   "port": 22,
+   "count_mode": "rxtx",
+   "cycle_day": 7,
+   "warn_percent": [
+    80,
+    95,
+    100
+   ]
+  }
+ ],
+ "_comment_sources": "interval_seconds — PROXY_CHECK_INTERVAL чекера; failures_before_alert у источника считается в замерах чекера, а не в опросах алертера: ip 3×300 с ≈ 15 мин, выход 2×900 с ≈ 15–30 мин",
+ "yt_region": {
+  "poll_seconds": 10800,
+  "expected": "RU",
+  "failures_before_alert": 2,
+  "skip_pattern": "\\(личный\\)"
+ },
+ "_comment_yt_region": "раз в 3 ч: какой страной YouTube видит каждую локацию (GL на youtube.com через socks чекера); не RU 2 замера подряд = вернулась реклама. exit-1/EXIT-5 RU только по геобазе Google. skip_pattern (regex по имени) — не проверять: выделенные «(личный)» не основные выходы",
+ "selfsteal_mask": {
+  "poll_seconds": 21600,
+  "failures_before_alert": 2,
+  "checks": [
+   {
+    "name": "node-a",
+    "domain": "mask-a.example.com",
+    "expected_ip": "203.0.113.11",
+    "probe": "203.0.113.11:3443",
+    "min_days": 20
+   },
+   {
+    "name": "exit-1",
+    "domain": "mask-b.example.com",
+    "expected_ip": "198.51.100.41",
+    "probe": "exit-1.example.net:443",
+    "min_days": 20
+   },
+   {
+    "name": "node-b",
+    "domain": "mask-c.example.com",
+    "expected_ip": "203.0.113.10",
+    "probe": "203.0.113.10:3459",
+    "min_days": 20
+   }
+  ]
+ },
+ "_comment_selfsteal_mask": "раз в 6 ч: selfsteal-домен (чужой FreeDNS) ведёт на ноду и Reality отдаёт сертификат > min_days; 2 замера подряд = тревога",
+ "yt_speed": {
+  "poll_seconds": 600,
+  "bytes": 1048576,
+  "timeout_seconds": 5,
+  "failures_before_alert": 2
+ },
+ "_comment_yt_speed": "раз в 10 мин через каждую российскую локацию (адрес в exit_check_skip_addresses) качаем 1 МБ скрипта плеера с www.youtube.com; не успел за 5 с 2 замера подряд = режут YouTube",
+ "message_thread_id": 7,
+ "_comment_yt_speed_skip": "российские локации без YouTube (прямой выход node-b: хостинг режет YouTube целиком) — yt_speed их не качает",
+ "yt_speed_skip_addresses": [
+  "203.0.113.10:3444"
+ ],
+ "entry_labels": {
+  "node-e.example.net": "node-a",
+  "203.0.113.11": "node-a",
+  "203.0.113.10": "node-b",
+  "exit-1.example.net": "exit-1"
+ },
+ "_comment_entry_labels": "имя сервера для адреса входа в подписке: node-e.example.net остался со времён старого хостинга, сейчас это node-a",
+ "_comment_log_container": "причину неудачи (нет первого байта / отдал N КБ / EOF) алертер берёт из лога чекера; timeout_seconds и min_bytes = PROXY_DOWNLOAD_TIMEOUT и PROXY_DOWNLOAD_MIN_SIZE, менять вместе",
+ "cdn_subscription": {
+  "poll_seconds": 600,
+  "failures_before_alert": 2,
+  "topology": "edge.cdn.example",
+  "path": "/<short_uuid пользователя-чекера>",
+  "checks": [
+   {
+    "domain": "sub.example.org",
+    "min_days": 20
+   },
+   {
+    "domain": "sub-cdn.example.com",
+    "min_days": 20
+   }
+  ]
+ },
+ "_comment_cdn_subscription": "раз в 10 мин: домены подписки резолвятся в текущий эдж Yandex CDN (у sub.example.org A прибита к IP эджа), подписка отдаёт 200, сертификат CDN > min_days (продление вручную); 2 замера подряд = тревога",
+ "web_checks": {
+  "poll_seconds": 0,
+  "failures_before_alert": 3,
+  "timeout_seconds": 15,
+  "checks": [
+   {
+    "label": "Кабинет из РФ (ctl-host → front-1)",
+    "url": "https://cabinet.example.net/",
+    "contains": "<title>ZanityVPN</title>"
+   },
+   {
+    "label": "API кабинета из РФ (ctl-host → front-1)",
+    "url": "https://cabinet.example.net/api/cabinet/branding/favicon"
+   },
+   {
+    "label": "Лендинг из РФ (ctl-host → front-1)",
+    "url": "https://example.com/",
+    "contains": "Zanity VPN"
+   },
+   {
+    "label": "Бот: путь Telegram → реле → бот (через socks бота)",
+    "webhook_from_env": "WEBHOOK_URL",
+    "path": "/health/telegram-webhook",
+    "proxy": true,
+    "contains": "\"status\":\"ok\""
+   }
+  ]
+ },
+ "_comment_web_checks": "каждый цикл (120 с): кабинет и лендинг с ctl-host, то есть из РФ — ловит бан front-1 из РФ, которого не видит сторож на exit-1; путь вебхука — curl через socks бота (выходы вне РФ) на <база WEBHOOK_URL>/health/telegram-webhook, ловит и смерть exit-1, на котором стоит сторож; 3 замера подряд = тревога"
+}

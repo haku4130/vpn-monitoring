@@ -1,0 +1,10 @@
+[Unit]
+Description=Внешний сторож управляющего сервера zanity
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/zanity-watchdog.env
+ExecStart=/usr/bin/python3 /opt/zanity-watchdog/watchdog.py
+TimeoutStartSec=90

@@ -1,0 +1,83 @@
+{
+ "_comment": "Проверки внешнего сторожа на exit-1 (CHECKS_FILE). Секретов нет: токен и чат — в /etc/zanity-watchdog.env. Каждый прогон таймера (раз в минуту) — замер; тревога после FAILURES_BEFORE_ALERT (3) неудач подряд.",
+ "checks": [
+  {
+   "type": "tg_webhook",
+   "key": "bot_webhook",
+   "label": "Бот: приём апдейтов Telegram",
+   "_comment": "getWebhookInfo + GET <реле>/health/telegram-webhook. 11-15…16 реле exit-4:88 не доходило до ctl-host ~34 ч, а /health бота был зелёным"
+  },
+  {
+   "type": "http",
+   "key": "bot_health",
+   "label": "Бот на ctl-host (bot.example.net/health)",
+   "url": "https://bot.example.net/health",
+   "contains": "\"status\":\"ok\""
+  },
+  {
+   "type": "http",
+   "key": "cabinet",
+   "label": "Кабинет через front-1",
+   "url": "https://cabinet.example.net/",
+   "contains": "<title>ZanityVPN</title>",
+   "cert_min_days": 20,
+   "diagnose_with": "cabinet_origin",
+   "hint": "origin на ctl-host отвечает, сломан путь через front-1 (DNS, Reality FRONT-1, Caddy)"
+  },
+  {
+   "type": "http",
+   "key": "cabinet_api",
+   "label": "API кабинета через front-1",
+   "url": "https://cabinet.example.net/api/cabinet/branding/favicon",
+   "diagnose_with": "cabinet_api_origin",
+   "hint": "origin на ctl-host отвечает, сломан путь через front-1 (DNS, Reality FRONT-1, Caddy)"
+  },
+  {
+   "type": "http",
+   "key": "cabinet_origin",
+   "label": "Кабинет на origin ctl-host",
+   "url": "https://cabinet.example.net/",
+   "resolve": "203.0.113.20",
+   "contains": "<title>ZanityVPN</title>",
+   "cert_min_days": 20
+  },
+  {
+   "type": "http",
+   "key": "cabinet_api_origin",
+   "label": "API кабинета на origin ctl-host",
+   "url": "https://cabinet.example.net/api/cabinet/branding/favicon",
+   "resolve": "203.0.113.20"
+  },
+  {
+   "type": "http",
+   "key": "landing",
+   "label": "Лендинг example.com через front-1",
+   "url": "https://example.com/",
+   "contains": "Zanity VPN",
+   "cert_min_days": 20,
+   "diagnose_with": "landing_origin",
+   "hint": "Worker origin.example.com отвечает, сломан путь через front-1 (DNS, Reality FRONT-1, Caddy)"
+  },
+  {
+   "type": "http",
+   "key": "landing_origin",
+   "label": "Лендинг: Worker origin.example.com",
+   "url": "https://origin.example.com/",
+   "contains": "Zanity VPN"
+  },
+  {
+   "type": "http",
+   "key": "panel",
+   "label": "Панель remnapanel.example.net",
+   "url": "https://remnapanel.example.net/",
+   "any_ok": true
+  },
+  {
+   "type": "http",
+   "key": "status",
+   "label": "Чекер status.example.net",
+   "url": "https://status.example.net/health",
+   "any_ok": true
+  }
+ ]
+}
